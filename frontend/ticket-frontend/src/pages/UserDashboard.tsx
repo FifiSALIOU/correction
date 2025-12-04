@@ -1,5 +1,5 @@
-import React from "react";
-import { useEffect, useState, FormEvent, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
+import type { FormEvent } from "react";
 
 interface UserDashboardProps {
   token: string;
@@ -18,6 +18,15 @@ interface Ticket {
   } | null;
   created_at: string;
   assigned_at?: string | null;
+}
+
+interface Notification {
+  id: string;
+  type: string;
+  message: string;
+  read: boolean;
+  created_at: string;
+  ticket_id?: string | null;
 }
 
 function UserDashboard({ token: tokenProp }: UserDashboardProps) {
@@ -41,6 +50,9 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
   const [feedbackTicket, setFeedbackTicket] = useState<string | null>(null);
   const [feedbackScore, setFeedbackScore] = useState<number>(5);
   const [feedbackComment, setFeedbackComment] = useState<string>("");
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState<number>(0);
+  const [showNotifications, setShowNotifications] = useState<boolean>(false);
   
   // Mettre à jour le token si le prop change
   useEffect(() => {
@@ -83,9 +95,98 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
     }
   }
 
+  async function loadNotifications() {
+    if (!actualToken || actualToken.trim() === "") {
+      return;
+    }
+    
+    try {
+      const res = await fetch("http://localhost:8000/notifications/", {
+        headers: {
+          Authorization: `Bearer ${actualToken}`,
+        },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setNotifications(data);
+      }
+    } catch (err) {
+      console.error("Erreur lors du chargement des notifications:", err);
+    }
+  }
+
+  async function loadUnreadCount() {
+    if (!actualToken || actualToken.trim() === "") {
+      return;
+    }
+    
+    try {
+      const res = await fetch("http://localhost:8000/notifications/unread/count", {
+        headers: {
+          Authorization: `Bearer ${actualToken}`,
+        },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setUnreadCount(data.unread_count || 0);
+      }
+    } catch (err) {
+      console.error("Erreur lors du chargement du nombre de notifications non lues:", err);
+    }
+  }
+
+  async function markNotificationAsRead(notificationId: string) {
+    if (!actualToken || actualToken.trim() === "") {
+      return;
+    }
+    
+    try {
+      const res = await fetch(`http://localhost:8000/notifications/${notificationId}/read`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${actualToken}`,
+        },
+      });
+      if (res.ok) {
+        // Recharger les notifications et le compteur
+        await loadNotifications();
+        await loadUnreadCount();
+      }
+    } catch (err) {
+      console.error("Erreur lors du marquage de la notification comme lue:", err);
+    }
+  }
+
   useEffect(() => {
     if (actualToken) {
       void loadTickets();
+      void loadNotifications();
+      void loadUnreadCount();
+      // Charger les informations de l'utilisateur
+      async function loadUserInfo() {
+        try {
+          const res = await fetch("http://localhost:8000/auth/me", {
+            headers: {
+              Authorization: `Bearer ${actualToken}`,
+            },
+          });
+          if (res.ok) {
+            const data = await res.json();
+            setUserInfo({ full_name: data.full_name });
+          }
+        } catch (err) {
+          console.error("Erreur lors du chargement des infos utilisateur:", err);
+        }
+      }
+      void loadUserInfo();
+      
+      // Recharger les notifications toutes les 30 secondes
+      const interval = setInterval(() => {
+        void loadNotifications();
+        void loadUnreadCount();
+      }, 30000);
+      
+      return () => clearInterval(interval);
     }
   }, [actualToken]);
 
@@ -142,6 +243,8 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
       setPriority("moyenne");
       setType("materiel");
       await loadTickets();
+      await loadNotifications();
+      await loadUnreadCount();
       alert("Ticket créé avec succès !");
     } catch (err: any) {
       const errorMsg = err.message || "Erreur lors de la création du ticket";
@@ -171,6 +274,8 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
 
       if (res.ok) {
         await loadTickets();
+        await loadNotifications();
+        await loadUnreadCount();
         setValidationTicket(null);
         alert(validated ? "Ticket validé et clôturé avec succès !" : "Ticket rejeté. Il sera réassigné.");
       } else {
@@ -207,6 +312,8 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
 
       if (res.ok) {
         await loadTickets();
+        await loadNotifications();
+        await loadUnreadCount();
         setFeedbackTicket(null);
         setFeedbackScore(5);
         setFeedbackComment("");
@@ -246,6 +353,7 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [activeSection, setActiveSection] = useState<string>("dashboard");
   const ticketsListRef = useRef<HTMLDivElement>(null);
+  const [userInfo, setUserInfo] = useState<{ full_name: string } | null>(null);
 
   return (
     <div style={{ display: "flex", minHeight: "100vh", fontFamily: "sans-serif", background: "#f5f5f5" }}>
@@ -309,85 +417,190 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
       </div>
 
       {/* Main Content */}
-      <div style={{ flex: 1, padding: "30px", overflow: "auto" }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        {/* Barre de navigation en haut */}
+        <div style={{
+          background: "#374151",
+          padding: "16px 30px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "flex-end",
+          gap: "24px",
+          borderBottom: "1px solid #4b5563"
+        }}>
+          <div style={{ 
+            cursor: "pointer", 
+            width: "24px", 
+            height: "24px", 
+            display: "flex", 
+            alignItems: "center", 
+            justifyContent: "center",
+            color: "white",
+            fontSize: "20px"
+          }} onClick={() => setShowCreateModal(true)}>
+            +
+          </div>
+          <div style={{ 
+            width: "1px", 
+            height: "24px", 
+            background: "#4b5563" 
+          }}></div>
+          <div style={{ 
+            cursor: "pointer", 
+            width: "24px", 
+            height: "24px", 
+            display: "flex", 
+            alignItems: "center", 
+            justifyContent: "center",
+            color: "white"
+          }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" fill="currentColor"/>
+              <path d="M19 13a2 2 0 0 1-2 2H5l-4 4V3a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" fill="currentColor" opacity="0.6" transform="translate(2, 2)"/>
+            </svg>
+          </div>
+          <div 
+            onClick={() => setShowNotifications(!showNotifications)}
+            style={{ 
+              cursor: "pointer", 
+              width: "24px", 
+              height: "24px", 
+              display: "flex", 
+              alignItems: "center", 
+              justifyContent: "center",
+              color: "white",
+              position: "relative"
+            }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" fill="currentColor"/>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0" fill="currentColor"/>
+            </svg>
+            {/* Badge de notification */}
+            {unreadCount > 0 && (
+              <span style={{
+                position: "absolute",
+                top: "-5px",
+                right: "-5px",
+                minWidth: "18px",
+                height: "18px",
+                background: "#ef4444",
+                borderRadius: "50%",
+                border: "2px solid #374151",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "11px",
+                fontWeight: "bold",
+                color: "white",
+                padding: "0 4px"
+              }}>
+                {unreadCount > 99 ? "99+" : unreadCount}
+              </span>
+            )}
+          </div>
+          <div style={{ 
+            width: "1px", 
+            height: "24px", 
+            background: "#4b5563" 
+          }}></div>
+          <div style={{ 
+            display: "flex", 
+            alignItems: "center", 
+            gap: "12px",
+            color: "white"
+          }}>
+            <span style={{ fontSize: "14px", fontWeight: "500" }}>
+              {userInfo?.full_name || "Utilisateur"}
+            </span>
+            <div style={{ position: "relative" }}>
+              <div style={{
+                width: "36px",
+                height: "36px",
+                borderRadius: "50%",
+                background: "#3b82f6",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "white",
+                fontSize: "14px",
+                fontWeight: "600"
+              }}>
+                {userInfo?.full_name ? userInfo.full_name.charAt(0).toUpperCase() : "U"}
+              </div>
+              {/* Indicateur de statut vert (en ligne) */}
+              <div style={{
+                position: "absolute",
+                bottom: "0",
+                right: "0",
+                width: "12px",
+                height: "12px",
+                background: "#10b981",
+                borderRadius: "50%",
+                border: "2px solid #374151"
+              }}></div>
+            </div>
+          </div>
+        </div>
+
+        {/* Contenu principal avec scroll */}
+        <div style={{ flex: 1, padding: "30px", overflow: "auto" }}>
+          {/* Message de bienvenue - Visible seulement sur Dashboard */}
+          {activeSection === "dashboard" && userInfo && (
+            <div style={{ marginBottom: "24px" }}>
+              <h2 style={{ fontSize: "28px", fontWeight: "600", color: "#333", margin: 0 }}>
+                Bienvenue, {userInfo.full_name}
+              </h2>
+            </div>
+          )}
+        
         {/* Summary Cards - Visible seulement sur Dashboard */}
         {activeSection === "dashboard" && (
           <div style={{ display: "flex", gap: "20px", marginBottom: "30px" }}>
-          <div style={{ 
-            padding: "24px", 
-            background: "white", 
-            borderRadius: "12px", 
-            boxShadow: "0 2px 8px rgba(0,0,0,0.1)", 
-            flex: 1,
-            display: "flex",
-            alignItems: "center",
-            gap: "16px"
-          }}>
             <div style={{ 
-              width: "56px", 
-              height: "56px", 
-              borderRadius: "12px", 
-              background: "#17a2b8", 
-              display: "flex", 
-              alignItems: "center", 
-              justifyContent: "center",
-              fontSize: "24px"
-            }}>?</div>
-            <div>
-              <div style={{ fontSize: "14px", color: "#666", marginBottom: "4px" }}>Tickets Ouverts</div>
-              <div style={{ fontSize: "32px", fontWeight: "bold", color: "#007bff" }}>{opened}</div>
+              padding: "24px", 
+              background: "white", 
+              borderRadius: "8px", 
+              boxShadow: "0 2px 4px rgba(0,0,0,0.1)", 
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-start"
+            }}>
+              <div style={{ fontSize: "64px", fontWeight: "bold", color: "#ff9800", lineHeight: "1", marginBottom: "8px" }}>
+                {opened}
+              </div>
+              <div style={{ fontSize: "14px", color: "#666" }}>Tickets Ouverts</div>
             </div>
-          </div>
-          <div style={{ 
-            padding: "24px", 
-            background: "white", 
-            borderRadius: "12px", 
-            boxShadow: "0 2px 8px rgba(0,0,0,0.1)", 
-            flex: 1,
-            display: "flex",
-            alignItems: "center",
-            gap: "16px"
-          }}>
             <div style={{ 
-              width: "56px", 
-              height: "56px", 
-              borderRadius: "12px", 
-              background: "#ff9800", 
-              display: "flex", 
-              alignItems: "center", 
-              justifyContent: "center",
-              fontSize: "24px"
-            }}>Δ</div>
-            <div>
-              <div style={{ fontSize: "14px", color: "#666", marginBottom: "4px" }}>Tickets En Cours</div>
-              <div style={{ fontSize: "32px", fontWeight: "bold", color: "#ffc107" }}>{inProgress}</div>
+              padding: "24px", 
+              background: "white", 
+              borderRadius: "8px", 
+              boxShadow: "0 2px 4px rgba(0,0,0,0.1)", 
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-start"
+            }}>
+              <div style={{ fontSize: "64px", fontWeight: "bold", color: "#007bff", lineHeight: "1", marginBottom: "8px" }}>
+                {inProgress}
+              </div>
+              <div style={{ fontSize: "14px", color: "#666" }}>Tickets en cours</div>
             </div>
-          </div>
-          <div style={{ 
-            padding: "24px", 
-            background: "white", 
-            borderRadius: "12px", 
-            boxShadow: "0 2px 8px rgba(0,0,0,0.1)", 
-            flex: 1,
-            display: "flex",
-            alignItems: "center",
-            gap: "16px"
-          }}>
             <div style={{ 
-              width: "56px", 
-              height: "56px", 
-              borderRadius: "12px", 
-              background: "#17a2b8", 
-              display: "flex", 
-              alignItems: "center", 
-              justifyContent: "center",
-              fontSize: "24px"
-            }}>✓</div>
-            <div>
-              <div style={{ fontSize: "14px", color: "#666", marginBottom: "4px" }}>Tickets Résolus</div>
-              <div style={{ fontSize: "32px", fontWeight: "bold", color: "#28a745" }}>{resolved}</div>
+              padding: "24px", 
+              background: "white", 
+              borderRadius: "8px", 
+              boxShadow: "0 2px 4px rgba(0,0,0,0.1)", 
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-start"
+            }}>
+              <div style={{ fontSize: "64px", fontWeight: "bold", color: "#28a745", lineHeight: "1", marginBottom: "8px" }}>
+                {resolved}
+              </div>
+              <div style={{ fontSize: "14px", color: "#666" }}>Tickets Résolus</div>
             </div>
-          </div>
           </div>
         )}
 
@@ -538,6 +751,7 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
         </div>
           </div>
         )}
+
         {/* Create Ticket Modal */}
         {showCreateModal && (
           <div style={{
@@ -688,8 +902,8 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
           </div>
         )}
 
-              {/* Modal de validation */}
-              {validationTicket && (
+        {/* Modal de validation */}
+        {validationTicket && (
                 <div style={{
                   position: "fixed",
                   top: 0,
@@ -737,10 +951,10 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
                     </div>
                   </div>
                 </div>
-              )}
+        )}
 
-              {/* Modal de feedback */}
-              {feedbackTicket && (
+        {/* Modal de feedback */}
+        {feedbackTicket && (
                 <div style={{
                   position: "fixed",
                   top: 0,
@@ -828,11 +1042,152 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
                   </div>
                 </div>
               )}
+
+        {/* Modal de notifications */}
+        {showNotifications && (
+          <div 
+            onClick={() => setShowNotifications(false)}
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: "rgba(0,0,0,0.5)",
+              display: "flex",
+              alignItems: "flex-start",
+              justifyContent: "flex-end",
+              padding: "60px 20px 20px 20px",
+              zIndex: 1000
+            }}
+          >
+            <div 
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                background: "white",
+                borderRadius: "12px",
+                width: "400px",
+                maxHeight: "600px",
+                boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
+                display: "flex",
+                flexDirection: "column",
+                overflow: "hidden"
+              }}
+            >
+              <div style={{
+                padding: "20px",
+                borderBottom: "1px solid #eee",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center"
+              }}>
+                <h3 style={{ margin: 0, fontSize: "18px", fontWeight: "600", color: "#333" }}>
+                  Notifications
+                </h3>
+                <button
+                  onClick={() => setShowNotifications(false)}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    fontSize: "24px",
+                    cursor: "pointer",
+                    color: "#999",
+                    padding: "0",
+                    width: "24px",
+                    height: "24px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center"
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+              <div style={{
+                flex: 1,
+                overflowY: "auto",
+                padding: "10px"
+              }}>
+                {notifications.length === 0 ? (
+                  <div style={{
+                    textAlign: "center",
+                    padding: "40px 20px",
+                    color: "#999"
+                  }}>
+                    Aucune notification
+                  </div>
+                ) : (
+                  notifications.map((notif) => (
+                    <div
+                      key={notif.id}
+                      onClick={() => {
+                        if (!notif.read) {
+                          void markNotificationAsRead(notif.id);
+                        }
+                      }}
+                      style={{
+                        padding: "12px",
+                        marginBottom: "8px",
+                        borderRadius: "8px",
+                        background: notif.read ? "#f9f9f9" : "#e3f2fd",
+                        border: notif.read ? "1px solid #eee" : "1px solid #90caf9",
+                        cursor: "pointer",
+                        transition: "background 0.2s"
+                      }}
+                    >
+                      <div style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                        gap: "10px"
+                      }}>
+                        <div style={{ flex: 1 }}>
+                          <p style={{
+                            margin: 0,
+                            fontSize: "14px",
+                            color: "#333",
+                            lineHeight: "1.5"
+                          }}>
+                            {notif.message}
+                          </p>
+                          <p style={{
+                            margin: "4px 0 0 0",
+                            fontSize: "11px",
+                            color: "#999"
+                          }}>
+                            {new Date(notif.created_at).toLocaleString("fr-FR", {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit"
+                            })}
+                          </p>
+                        </div>
+                        {!notif.read && (
+                          <div style={{
+                            width: "8px",
+                            height: "8px",
+                            borderRadius: "50%",
+                            background: "#007bff",
+                            flexShrink: 0,
+                            marginTop: "4px"
+                          }}></div>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           </div>
-        );
-      }
+        )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
-        export default UserDashboard;
+export default UserDashboard;
 
 
