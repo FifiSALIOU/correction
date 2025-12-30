@@ -25,8 +25,6 @@ class UserBase(BaseModel):
     agency: Optional[str] = None  # Agence au lieu de département
     phone: Optional[str] = None
     specialization: Optional[str] = None  # Spécialisation : "materiel" ou "applicatif"
-    work_hours: Optional[str] = None  # Plages horaires (ex. "08:30-12:30 / 14:00-17:30")
-    availability_status: Optional[str] = None  # disponible / occupé / en pause
     max_tickets_capacity: Optional[int] = None  # Capacité max de tickets simultanés
     notes: Optional[str] = None  # Notes optionnelles
 
@@ -43,23 +41,16 @@ class UserUpdate(BaseModel):
     agency: Optional[str] = None
     phone: Optional[str] = None
     role_id: Optional[UUID] = None
-    status: Optional[str] = None
+    actif: Optional[bool] = None
     specialization: Optional[str] = None
-    work_hours: Optional[str] = None
-    availability_status: Optional[str] = None
     max_tickets_capacity: Optional[int] = None
     notes: Optional[str] = None
-
-
-class AvailabilityStatusUpdate(BaseModel):
-    """Schéma pour mettre à jour uniquement le statut de disponibilité"""
-    availability_status: str  # disponible, occupé, en pause
 
 
 class UserRead(UserBase):
     id: UUID
     role: RoleRead
-    status: str
+    actif: bool
 
     class Config:
         from_attributes = True
@@ -141,7 +132,7 @@ class TicketCategoryConfig(BaseModel):
     id: UUID
     name: str
     description: Optional[str] = None
-    type_code: str
+    type_code: str  # Récupéré depuis ticket_type.code via la relation dans l'endpoint API
     is_active: bool
 
     class Config:

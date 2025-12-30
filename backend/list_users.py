@@ -21,7 +21,7 @@ def list_users():
             print(f"   Email: {user.email}")
             print(f"   Role: {role_name}")
             print(f"   Agence: {agency}")
-            print(f"   Status: {user.status}")
+            print(f"   Actif: {user.actif}")
             print()
         
         print("="*60)

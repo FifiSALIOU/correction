@@ -69,12 +69,11 @@ interface Technician {
   resolved_today?: number;
   avg_resolution_time_days?: number;
   avg_response_time_minutes?: number;
-  status?: string;
-  availability_status?: string;
+  actif?: boolean;
   last_login_at?: string | null;
   success_rate?: number;
   workload_ratio?: string;
-  work_hours?: string;
+  is_available?: boolean;
   max_tickets_capacity?: number | null;
   notes?: string | null;
 }
@@ -111,12 +110,10 @@ interface UserRead {
 function DSIDashboard({ token }: DSIDashboardProps) {
   const [searchParams] = useSearchParams();
   
-  // Déterminer le statut simple Actif / Inactif à partir du statut en base
+  // Déterminer le statut simple Actif / Inactif à partir de actif (Boolean)
   function getAvailabilityStatus(tech: Technician): string {
-    const rawStatus = (tech.status || "").toLowerCase();
-    // On considère "actif" ou "active" comme actif, tout le reste comme inactif
-    const isActive = rawStatus === "actif" || rawStatus === "active";
-    return isActive ? "actif" : "inactif";
+    // actif est maintenant un Boolean
+    return tech.actif === true ? "actif" : "inactif";
   }
 
   const [allTickets, setAllTickets] = useState<Ticket[]>([]);
@@ -479,14 +476,12 @@ function DSIDashboard({ token }: DSIDashboardProps) {
     phone: "",
     agency: "",
     role: "",
-    status: "actif",
+    actif: true,
     password: "",
     confirmPassword: "",
     generateRandomPassword: true,
     sendEmail: true,
     // Par défaut : 08h-13h / 14h-17h avec une heure de pause déjeuner
-    work_hours: "08:00-13:00 / 14:00-17:00",
-    availability_status: "disponible"
   });
   const [editUser, setEditUser] = useState({
     full_name: "",
@@ -494,10 +489,8 @@ function DSIDashboard({ token }: DSIDashboardProps) {
     phone: "",
     agency: "",
     role: "",
-    status: "actif",
+    actif: true,
     // Par défaut : 08h-13h / 14h-17h avec une heure de pause déjeuner
-    work_hours: "08:00-13:00 / 14:00-17:00",
-    availability_status: "disponible"
   });
 
   const handleEditUser = (user: any) => {
@@ -512,7 +505,8 @@ function DSIDashboard({ token }: DSIDashboardProps) {
       }
     }
     
-    const statusValue = user.is_active !== undefined ? (user.is_active ? "actif" : "inactif") : (user.status === "Actif" || user.status === "actif" ? "actif" : "inactif");
+    // actif est maintenant un Boolean
+    const actifValue = user.actif !== undefined ? user.actif : (user.is_active !== undefined ? user.is_active : true);
     
     setEditUser({
       full_name: user.full_name || user.name || "",
@@ -520,9 +514,7 @@ function DSIDashboard({ token }: DSIDashboardProps) {
       phone: user.phone || "",
       agency: user.agency || "",
       role: roleName,
-      status: statusValue,
-      work_hours: user.work_hours || "08:00-13:00 / 14:00-17:00",
-      availability_status: user.availability_status || "disponible"
+      actif: actifValue,
     });
     setShowEditUserModal(true);
   };
@@ -563,7 +555,7 @@ function DSIDashboard({ token }: DSIDashboardProps) {
         email: editUser.email,
         phone: editUser.phone || null,
         agency: editUser.agency,
-        status: editUser.status
+        actif: editUser.actif
       };
 
       if (roleId) {
@@ -581,8 +573,6 @@ function DSIDashboard({ token }: DSIDashboardProps) {
 
       // Ajouter les informations spécifiques aux techniciens
       if (editUser.role === "Technicien (Matériel)" || editUser.role === "Technicien (Applicatif)") {
-        updateData.work_hours = editUser.work_hours;
-        updateData.availability_status = editUser.availability_status;
       }
 
       const res = await fetch(`http://localhost:8000/users/${editingUser.id}`, {
@@ -1276,7 +1266,7 @@ function DSIDashboard({ token }: DSIDashboardProps) {
               } catch (err) {
                 console.error(`Erreur stats pour ${tech.id}:`, err);
               }
-              return { ...tech, work_hours: "08:00-13:00 / 14:00-17:00", workload_ratio: "0/5", resolved_today: 0, avg_response_time_minutes: 0 };
+              return { ...tech, workload_ratio: "0/5", resolved_today: 0, avg_response_time_minutes: 0 };
             })
           );
           setTechnicians(techsWithStats);
@@ -2415,8 +2405,7 @@ function DSIDashboard({ token }: DSIDashboardProps) {
   // Statistiques agrégées pour la section Techniciens
   const activeTechniciansCount = technicians.filter((tech) => {
     const status = tech.status?.toLowerCase() || "";
-    const availability = tech.availability_status?.toLowerCase() || "";
-    return status === "actif" || availability === "disponible";
+    return tech.actif === true;
   }).length;
 
   const ticketsInProgressCount = assignedCount;
@@ -5391,7 +5380,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                 }}
               >
                 <option value="all">Tous les statuts</option>
-                <option value="en_attente_analyse">En attente</option>
+                <option value="en_attente_analyse">En attente d'assignation</option>
                 <option value="en_traitement">En traitement</option>
                 <option value="resolu">Résolus</option>
                 <option value="cloture">Clôturés</option>
@@ -5534,7 +5523,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                         whiteSpace: "nowrap",
                         display: "inline-block"
                       }}>
-                        {t.status === "en_attente_analyse" ? "En attente" :
+                        {t.status === "en_attente_analyse" ? "En attente d'assignation" :
                          t.status === "assigne_technicien" ? "Assigné" :
                          t.status === "en_cours" ? "En cours" :
                          t.status === "resolu" ? "Résolu" :
@@ -6569,7 +6558,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                     }}
                   >
                     <option value="all">Tous les statuts</option>
-                    <option value="en_attente_analyse">En attente</option>
+                    <option value="en_attente_analyse">En attente d'assignation</option>
                     <option value="en_traitement">En traitement</option>
                     <option value="resolu">Résolus</option>
                     <option value="cloture">Clôturés</option>
@@ -6688,19 +6677,19 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                             background: t.status === "en_attente_analyse" ? "#fef3c7" : 
                                        t.status === "assigne_technicien" ? "#dbeafe" : 
                                        t.status === "en_cours" ? "#fed7aa" : 
-                                       t.status === "resolu" ? "#e5e7eb" : 
+                                       t.status === "resolu" ? "#d4edda" : 
                                        t.status === "cloture" ? "#e5e7eb" :
                                        t.status === "rejete" ? "#fee2e2" : "#e5e7eb",
                             color: t.status === "en_attente_analyse" ? "#92400e" : 
                                    t.status === "assigne_technicien" ? "#1e40af" : 
                                    t.status === "en_cours" ? "#9a3412" : 
-                                   t.status === "resolu" ? "#374151" : 
+                                   t.status === "resolu" ? "#155724" : 
                                    t.status === "cloture" ? "#374151" :
                                    t.status === "rejete" ? "#991b1b" : "#374151",
                             whiteSpace: "nowrap",
                             display: "inline-block"
                           }}>
-                            {t.status === "en_attente_analyse" ? "En attente" :
+                            {t.status === "en_attente_analyse" ? "En attente d'assignation" :
                              t.status === "assigne_technicien" ? "Assigné" :
                              t.status === "en_cours" ? "En cours" :
                              t.status === "resolu" ? "Résolu" :
@@ -8674,7 +8663,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
              
              if (userStatusFilter !== "all") {
                filteredUsers = filteredUsers.filter((u: any) => {
-                 const isActive = u.is_active !== false;
+                 const isActive = u.actif === true;
                  return userStatusFilter === "actif" ? isActive : !isActive;
                });
              }
@@ -8852,7 +8841,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                        </tr>
                      ) : (
                        paginatedUsers.map((user: any, index: number) => {
-                         const isActive = user.is_active !== false;
+                         const isActive = user.actif === true;
                          const displayId = startIndex + index + 1;
                          return (
                            <tr key={user.id} style={{ borderBottom: "1px solid #eee" }}>
@@ -9262,7 +9251,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                  // Filtre par disponibilité
                  if (techAvailabilityFilter !== "all") {
                    filteredTechnicians = filteredTechnicians.filter((tech: any) =>
-                     (tech.availability_status || "").toLowerCase() === techAvailabilityFilter
+                     (tech.actif === true ? "disponible" : "indisponible") === techAvailabilityFilter
                    );
                  }
                  
@@ -9613,11 +9602,11 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                            borderRadius: "12px",
                            fontSize: "12px",
                            fontWeight: "500",
-                           background: selectedTechnicianDetails.status === "actif" ? "#28a745" : "#6c757d",
+                           background: selectedTechnicianDetails.actif === true ? "#28a745" : "#6c757d",
                            color: "white",
                            whiteSpace: "nowrap"
                          }}>
-                           {selectedTechnicianDetails.status === "actif" ? "Actif" : "Inactif"}
+                           {selectedTechnicianDetails.actif === true ? "Actif" : "Inactif"}
                          </span>
                        </div>
                        <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
@@ -9627,11 +9616,11 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                            borderRadius: "12px",
                            fontSize: "12px",
                            fontWeight: "500",
-                           background: selectedTechnicianDetails.availability_status === "disponible" ? "#28a745" : selectedTechnicianDetails.availability_status === "occupé" ? "#ffc107" : "#6c757d",
+                           background: selectedTechnicianDetails.actif === true ? "#28a745" : "#6c757d",
                            color: "white",
                            whiteSpace: "nowrap"
                          }}>
-                           {selectedTechnicianDetails.availability_status === "disponible" ? "Disponible" : selectedTechnicianDetails.availability_status === "occupé" ? "Occupé" : "Non défini"}
+                           {selectedTechnicianDetails.actif === true ? "Disponible" : "Indisponible"}
                          </span>
                        </div>
                        {selectedTechnicianDetails.last_login_at && (
@@ -9844,8 +9833,6 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                        phone: (e.target as any).phone.value || null,
                        agency: (e.target as any).agency.value || null,
                        specialization: (e.target as any).specialization.value || null,
-                       work_hours: (e.target as any).work_hours?.value || null,
-                       availability_status: (e.target as any).availability_status?.value || "disponible",
                        max_tickets_capacity: (e.target as any).max_tickets_capacity?.value ? parseInt((e.target as any).max_tickets_capacity.value) : null,
                        notes: (e.target as any).notes?.value || null,
                        role_id: technicianRole.id
@@ -9886,7 +9873,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                              } catch (err) {
                                console.error(`Erreur stats pour ${tech.id}:`, err);
                              }
-                            return { ...tech, work_hours: "08:00-13:00 / 14:00-17:00", workload_ratio: "0/5", resolved_today: 0, avg_response_time_minutes: 0 };
+                            return { ...tech, workload_ratio: "0/5", resolved_today: 0, avg_response_time_minutes: 0 };
                            })
                          );
                          setTechnicians(techsWithStats);
@@ -10008,40 +9995,6 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                          <option value="">Sélectionner...</option>
                          <option value="materiel">Matériel</option>
                          <option value="applicatif">Applicatif</option>
-                       </select>
-                     </div>
-                     <div>
-                       <label style={{ display: "block", marginBottom: "8px", fontWeight: "500", color: "#333" }}>Plages horaires</label>
-                       <input
-                         type="text"
-                         name="work_hours"
-                         placeholder="Ex: 08:30-12:30 / 14:00-17:30"
-                         style={{
-                           width: "100%",
-                           padding: "10px",
-                           border: "1px solid #ddd",
-                           borderRadius: "5px",
-                           fontSize: "14px"
-                         }}
-                       />
-                     </div>
-                     <div>
-                       <label style={{ display: "block", marginBottom: "8px", fontWeight: "500", color: "#333" }}>Statut de disponibilité</label>
-                       <select
-                         name="availability_status"
-                         defaultValue="disponible"
-                         style={{
-                           width: "100%",
-                           padding: "10px",
-                           border: "1px solid #ddd",
-                           borderRadius: "5px",
-                           fontSize: "14px",
-                           background: "white"
-                         }}
-                       >
-                         <option value="disponible">Disponible</option>
-                         <option value="occupé">Occupé</option>
-                         <option value="en pause">En pause</option>
                        </select>
                      </div>
                      <div>
@@ -10176,8 +10129,6 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                        phone: (e.target as any).phone.value || null,
                        agency: (e.target as any).agency.value || null,
                        specialization: (e.target as any).specialization.value || null,
-                       work_hours: (e.target as any).work_hours?.value || null,
-                       availability_status: (e.target as any).availability_status?.value || null,
                        max_tickets_capacity: (e.target as any).max_tickets_capacity?.value ? parseInt((e.target as any).max_tickets_capacity.value) : null,
                        notes: (e.target as any).notes?.value || null
                      };
@@ -10218,7 +10169,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                              } catch (err) {
                                console.error(`Erreur stats pour ${tech.id}:`, err);
                              }
-                            return { ...tech, work_hours: "08:00-13:00 / 14:00-17:00", workload_ratio: "0/5", resolved_today: 0, avg_response_time_minutes: 0 };
+                            return { ...tech, workload_ratio: "0/5", resolved_today: 0, avg_response_time_minutes: 0 };
                            })
                          );
                          setTechnicians(techsWithStats);
@@ -10315,41 +10266,6 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                          <option value="">Sélectionner...</option>
                          <option value="materiel">Matériel</option>
                          <option value="applicatif">Applicatif</option>
-                       </select>
-                     </div>
-                     <div>
-                       <label style={{ display: "block", marginBottom: "8px", fontWeight: "500", color: "#333" }}>Plages horaires</label>
-                       <input
-                         type="text"
-                         name="work_hours"
-                         placeholder="Ex: 08:30-12:30 / 14:00-17:30"
-                         defaultValue={editingTechnician.work_hours || ""}
-                         style={{
-                           width: "100%",
-                           padding: "10px",
-                           border: "1px solid #ddd",
-                           borderRadius: "5px",
-                           fontSize: "14px"
-                         }}
-                       />
-                     </div>
-                     <div>
-                       <label style={{ display: "block", marginBottom: "8px", fontWeight: "500", color: "#333" }}>Statut de disponibilité</label>
-                       <select
-                         name="availability_status"
-                         defaultValue={editingTechnician.availability_status || "disponible"}
-                         style={{
-                           width: "100%",
-                           padding: "10px",
-                           border: "1px solid #ddd",
-                           borderRadius: "5px",
-                           fontSize: "14px",
-                           background: "white"
-                         }}
-                       >
-                         <option value="disponible">Disponible</option>
-                         <option value="occupé">Occupé</option>
-                         <option value="en pause">En pause</option>
                        </select>
                      </div>
                      <div>
@@ -10512,7 +10428,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                                  } catch (err) {
                                    console.error(`Erreur stats pour ${tech.id}:`, err);
                                  }
-                                return { ...tech, work_hours: "08:00-13:00 / 14:00-17:00", workload_ratio: "0/5", resolved_today: 0, avg_response_time_minutes: 0 };
+                                return { ...tech, workload_ratio: "0/5", resolved_today: 0, avg_response_time_minutes: 0 };
                                })
                              );
                              setTechnicians(techsWithStats);
@@ -13431,20 +13347,15 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                        Statut <span style={{ color: "#dc3545" }}>*</span>
                      </label>
                      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                       {["Actif", "Inactif"].map((status) => (
-                         <label key={status} style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
-                           <input
-                             type="radio"
-                             name="status"
-                             value={status.toLowerCase()}
-                             checked={newUser.status === status.toLowerCase()}
-                             onChange={(e) => setNewUser({ ...newUser, status: e.target.value })}
-                             required
-                             style={{ cursor: "pointer" }}
-                           />
-                           <span>{status}</span>
-                         </label>
-                       ))}
+                       <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
+                         <input
+                           type="checkbox"
+                           checked={newUser.actif === true}
+                           onChange={(e) => setNewUser({ ...newUser, actif: e.target.checked })}
+                           style={{ cursor: "pointer" }}
+                         />
+                         <span>Actif</span>
+                       </label>
                      </div>
                    </div>
                  </div>
@@ -13455,39 +13366,6 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                  <div style={{ marginBottom: "24px" }}>
                    <h3 style={{ marginBottom: "16px", fontSize: "18px", fontWeight: "600", color: "#333" }}>Informations Technicien</h3>
                    <div style={{ border: "1px solid #ddd", borderRadius: "8px", padding: "16px", borderLeft: "4px solid #17a2b8", background: "#f8f9fa" }}>
-                     <div style={{ marginBottom: "16px" }}>
-                      <label style={{ display: "block", marginBottom: "8px", color: "#333", fontWeight: "500" }}>
-                        Horaires de Travail (incluent automatiquement la pause)
-                      </label>
-                       <input
-                         type="text"
-                        value={newUser.work_hours}
-                         onChange={(e) => setNewUser({ ...newUser, work_hours: e.target.value })}
-                         style={{ width: "100%", padding: "8px 12px", border: "1px solid #ddd", borderRadius: "4px", fontSize: "14px" }}
-                        placeholder='Ex: 08:00-13:00 / 14:00-17:00 (pause 13h-14h)'
-                       />
-                      <small style={{ display: "block", marginTop: "4px", color: "#666", fontSize: "12px" }}>
-                        Format recommandé: "08:00-13:00 / 14:00-17:00". La période entre les deux plages (ici 13h-14h) sera affichée automatiquement comme "En pause".
-                      </small>
-                     </div>
-                     <div style={{ marginBottom: "0" }}>
-                       <label style={{ display: "block", marginBottom: "8px", color: "#333", fontWeight: "500" }}>
-                         Statut de Disponibilité Initial
-                       </label>
-                       <select
-                         value={newUser.availability_status}
-                         onChange={(e) => setNewUser({ ...newUser, availability_status: e.target.value })}
-                         style={{ width: "100%", padding: "8px 12px", border: "1px solid #ddd", borderRadius: "4px", fontSize: "14px" }}
-                       >
-                        <option value="disponible">Disponible</option>
-                        <option value="occupé">Occupé</option>
-                        <option value="en pause">En pause</option>
-                        <option value="hors_service">Hors service</option>
-                       </select>
-                       <small style={{ display: "block", marginTop: "4px", color: "#666", fontSize: "12px" }}>
-                         Le statut peut être modifié ultérieurement par le technicien ou l'admin
-                       </small>
-                     </div>
                    </div>
                  </div>
                )}
@@ -13566,8 +13444,6 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                        confirmPassword: "",
                        generateRandomPassword: true,
                        sendEmail: true,
-                       work_hours: "08:30-12:30 / 14:00-17:30",
-                       availability_status: "disponible"
                      });
                    }}
                    style={{ 
@@ -13744,20 +13620,15 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                        Statut <span style={{ color: "#dc3545" }}>*</span>
                      </label>
                      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                       {["Actif", "Inactif"].map((status) => (
-                         <label key={status} style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
-                           <input
-                             type="radio"
-                             name="editStatus"
-                             value={status.toLowerCase()}
-                             checked={editUser.status === status.toLowerCase()}
-                             onChange={(e) => setEditUser({ ...editUser, status: e.target.value })}
-                             required
-                             style={{ cursor: "pointer" }}
-                           />
-                           <span>{status}{editUser.status === status.toLowerCase() ? " (Sélectionné)" : ""}</span>
-                         </label>
-                       ))}
+                       <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
+                         <input
+                           type="checkbox"
+                           checked={editUser.actif === true}
+                           onChange={(e) => setEditUser({ ...editUser, actif: e.target.checked })}
+                           style={{ cursor: "pointer" }}
+                         />
+                         <span>Actif</span>
+                       </label>
                      </div>
                    </div>
                  </div>
@@ -13768,39 +13639,6 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                  <div style={{ marginBottom: "24px" }}>
                    <h3 style={{ marginBottom: "16px", fontSize: "18px", fontWeight: "600", color: "#333" }}>Informations Technicien</h3>
                    <div style={{ border: "1px solid #ddd", borderRadius: "8px", padding: "16px", borderLeft: "4px solid #17a2b8", background: "#f8f9fa" }}>
-                     <div style={{ marginBottom: "16px" }}>
-                      <label style={{ display: "block", marginBottom: "8px", color: "#333", fontWeight: "500" }}>
-                        Horaires de Travail (incluent automatiquement la pause)
-                      </label>
-                       <input
-                         type="text"
-                        value={editUser.work_hours}
-                         onChange={(e) => setEditUser({ ...editUser, work_hours: e.target.value })}
-                         style={{ width: "100%", padding: "8px 12px", border: "1px solid #ddd", borderRadius: "4px", fontSize: "14px" }}
-                        placeholder='Ex: 08:00-13:00 / 14:00-17:00 (pause 13h-14h)'
-                       />
-                      <small style={{ display: "block", marginTop: "4px", color: "#666", fontSize: "12px" }}>
-                        Format recommandé: "08:00-13:00 / 14:00-17:00". La période entre les deux plages (ici 13h-14h) sera affichée automatiquement comme "En pause".
-                      </small>
-                     </div>
-                     <div style={{ marginBottom: "0" }}>
-                       <label style={{ display: "block", marginBottom: "8px", color: "#333", fontWeight: "500" }}>
-                         Statut de Disponibilité
-                       </label>
-                       <select
-                         value={editUser.availability_status}
-                         onChange={(e) => setEditUser({ ...editUser, availability_status: e.target.value })}
-                         style={{ width: "100%", padding: "8px 12px", border: "1px solid #ddd", borderRadius: "4px", fontSize: "14px" }}
-                       >
-                        <option value="disponible">Disponible</option>
-                        <option value="occupé">Occupé</option>
-                        <option value="en pause">En pause</option>
-                        <option value="hors_service">Hors service</option>
-                       </select>
-                       <small style={{ display: "block", marginTop: "4px", color: "#666", fontSize: "12px" }}>
-                         Le statut peut être modifié ultérieurement par le technicien ou l'admin
-                       </small>
-                     </div>
                    </div>
                  </div>
                )}

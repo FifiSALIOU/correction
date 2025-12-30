@@ -38,10 +38,8 @@ class User(Base):
     agency = Column(String(100), nullable=True)  # Agence au lieu de département
     phone = Column(String(30), nullable=True)
     profile_photo_url = Column(String(255), nullable=True)
-    status = Column(String(20), default="active")
+    actif = Column(Boolean, default=True)
     specialization = Column(String(50), nullable=True)  # Spécialisation : "materiel" ou "applicatif"
-    work_hours = Column(String(200), nullable=True)  # Plages horaires (ex. "08:30-12:30 / 14:00-17:30")
-    availability_status = Column(String(20), nullable=True, default="disponible")  # disponible / occupé / en pause
     max_tickets_capacity = Column(Integer, nullable=True)  # Capacité max de tickets simultanés
     notes = Column(Text, nullable=True)  # Notes optionnelles
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -181,8 +179,11 @@ class TicketCategory(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = Column(String(100), unique=True, nullable=False)
     description = Column(Text, nullable=True)
-    type_code = Column(String(50), nullable=False)  # ex: "materiel" ou "applicatif"
+    ticket_type_id = Column(UUID(as_uuid=True), ForeignKey("ticket_types.id"), nullable=False)
     is_active = Column(Boolean, default=True)
+    
+    # Relation vers TicketTypeModel
+    ticket_type = relationship("TicketTypeModel", backref="categories")
 
 
 class NotificationType(str, PyEnum):

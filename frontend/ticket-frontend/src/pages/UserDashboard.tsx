@@ -266,6 +266,23 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
     }
   }
 
+  // Fonction pour obtenir le message d'erreur selon le statut du ticket
+  function getBlockedMessage(ticket: Ticket, action: "modification" | "suppression"): string {
+    if (ticket.status === "cloture") {
+      return `Ce ticket est déjà clôturé. ${action === "modification" ? "Modification" : "Suppression"} impossible.`;
+    }
+    if (ticket.status === "resolu") {
+      return `Ce ticket est déjà résolu. ${action === "modification" ? "Modification" : "Suppression"} impossible.`;
+    }
+    if (ticket.status === "rejete") {
+      return `Ce ticket est rejeté. ${action === "modification" ? "Modification" : "Suppression"} impossible.`;
+    }
+    if (ticket.status === "assigne_technicien" || ticket.status === "en_cours" || ticket.technician !== null) {
+      return `Ce ticket est déjà assigné ou en cours de traitement. ${action === "modification" ? "Modification" : "Suppression"} impossible.`;
+    }
+    return `Ce ticket ne peut pas être ${action === "modification" ? "modifié" : "supprimé"}.`;
+  }
+
   function openEditModal(ticket: Ticket) {
     // Vérifier si le ticket peut être modifié (non assigné et statut en attente)
     const isAssigned = ticket.technician !== null && ticket.technician !== undefined;
@@ -273,7 +290,7 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
     const isBlocked = blockedStatuses.includes(ticket.status) || isAssigned;
     
     if (isBlocked) {
-      alert("Ce ticket est déjà assigné ou en cours de traitement. Modification impossible.");
+      alert(getBlockedMessage(ticket, "modification"));
       return;
     }
     
@@ -325,7 +342,7 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
     const isBlocked = blockedStatuses.includes(ticket.status) || isAssigned;
     
     if (isBlocked) {
-      alert("Ce ticket est déjà assigné ou en cours de traitement. Suppression impossible.");
+      alert(getBlockedMessage(ticket, "suppression"));
       return;
     }
     
@@ -684,7 +701,7 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
         setValidationTicket(null);
         setRejectionReason("");
         setShowRejectionForm(false);
-        alert(validated ? "Ticket validé et clôturé avec succès !" : "Ticket rejeté. Le technicien a été notifié avec le motif.");
+        alert(validated ? "Ticket validé et clôturé avec succès !" : "Ticket relancé. Le technicien a été notifié avec le motif.");
       } else {
         const error = await res.json();
         alert(`Erreur: ${error.detail || "Impossible de valider le ticket"}`);
@@ -2094,7 +2111,7 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
                                 const isBlocked = blockedStatuses.includes(t.status) || isAssigned;
                                 
                                 if (isBlocked) {
-                                  alert("Ce ticket est déjà assigné ou en cours de traitement. Modification impossible.");
+                                  alert(getBlockedMessage(t, "modification"));
                                   setOpenActionsMenuFor(null);
                                   return;
                                 }
@@ -2132,7 +2149,7 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
                                 const isBlocked = blockedStatuses.includes(t.status) || isAssigned;
                                 
                                 if (isBlocked) {
-                                  alert("Ce ticket est déjà assigné ou en cours de traitement. Suppression impossible.");
+                                  alert(getBlockedMessage(t, "suppression"));
                                   setOpenActionsMenuFor(null);
                                   return;
                                 }
@@ -2189,7 +2206,7 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
                               disabled={loading}
                               style={{ fontSize: "11px", padding: "4px 8px", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
                             >
-                              Rejeter
+                              Relancer
                             </button>
                           </div>
                         ) : t.status === "cloture" && t.feedback_score ? (
@@ -2972,7 +2989,7 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
                         disabled={loading}
                         style={{ flex: 1, padding: "10px", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
                       >
-                        Non, rejeter
+                        Non, relancer
                       </button>
                       <button
                             onClick={() => {
@@ -2988,13 +3005,13 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
                       </>
                     ) : (
                       <>
-                        <h3 style={{ marginBottom: "16px", color: "#dc3545" }}>Rejeter la résolution</h3>
+                        <h3 style={{ marginBottom: "16px", color: "#dc3545" }}>Relancer la résolution</h3>
                         <p style={{ marginBottom: "16px", color: "#666" }}>
-                          Veuillez indiquer le motif de rejet. Cette information sera transmise au technicien pour l'aider à mieux résoudre votre problème.
+                          Veuillez indiquer le motif de relance. Cette information sera transmise au technicien pour l'aider à mieux résoudre votre problème.
                         </p>
                         <div style={{ marginBottom: "16px" }}>
                           <label style={{ display: "block", marginBottom: "8px", fontWeight: "500", color: "#333" }}>
-                            Motif de rejet <span style={{ color: "#dc3545" }}>*</span>
+                            Motif de relance <span style={{ color: "#dc3545" }}>*</span>
                           </label>
                           <textarea
                             value={rejectionReason}
@@ -3024,10 +3041,14 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
                               color: "white", 
                               border: "none", 
                               borderRadius: "4px", 
-                              cursor: rejectionReason.trim() ? "pointer" : "not-allowed" 
+                              cursor: rejectionReason.trim() ? "pointer" : "not-allowed",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              whiteSpace: "nowrap"
                             }}
                           >
-                            Confirmer le rejet
+                            Confirmer la relance
                           </button>
                           <button
                             onClick={() => {

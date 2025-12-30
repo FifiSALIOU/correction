@@ -15,7 +15,6 @@ interface UserRead {
   full_name: string;
   email: string;
   agency?: string | null;
-  availability_status?: string | null;
   status?: string | null;
 }
 
@@ -208,7 +207,6 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
             full_name: meData.full_name,
             email: meData.email,
             agency: meData.agency,
-            availability_status: meData.availability_status
           });
         }
       } catch (err) {
@@ -1475,8 +1473,8 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
                             <td>{t.title}</td>
                             <td>
                               <span style={{
-                                padding: "4px 8px",
-                                borderRadius: "4px",
+                                padding: "4px 10px",
+                                borderRadius: "12px",
                                 fontSize: "12px",
                                 fontWeight: "500",
                                 background: t.priority === "critique" ? "#fee2e2" : t.priority === "haute" ? "#fed7aa" : t.priority === "moyenne" ? "#dbeafe" : t.priority === "faible" ? "#fee2e2" : "#e5e7eb",
@@ -1662,8 +1660,8 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
                             <td>{t.title}</td>
                             <td>
                               <span style={{
-                                padding: "4px 8px",
-                                borderRadius: "4px",
+                                padding: "4px 10px",
+                                borderRadius: "12px",
                                 fontSize: "12px",
                                 fontWeight: "500",
                                 background: t.priority === "critique" ? "#fee2e2" : t.priority === "haute" ? "#fed7aa" : t.priority === "moyenne" ? "#dbeafe" : t.priority === "faible" ? "#fee2e2" : "#e5e7eb",
@@ -1674,14 +1672,18 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
                             </td>
                             <td>
                               <span style={{
-                                padding: "4px 8px",
-                                borderRadius: "4px",
+                                padding: "4px 10px",
+                                borderRadius: "12px",
                                 fontSize: "12px",
-                                background: "#fff3e0",
-                                color: "#f57c00",
-                                whiteSpace: "nowrap",
-                                display: "inline-block"
+                                fontWeight: "500",
+                                background: "#fed7aa",
+                                color: "#9a3412",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "6px",
+                                whiteSpace: "nowrap"
                               }}>
+                                <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#f97316" }}></div>
                                 En cours
                               </span>
                             </td>
@@ -1886,22 +1888,25 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
                             <td style={{ padding: "12px 16px" }}>{t.title}</td>
                             <td style={{ padding: "12px 16px" }}>
                               <span style={{
-                                padding: "4px 8px",
-                                borderRadius: "4px",
+                                padding: "4px 10px",
+                                borderRadius: "12px",
                                 fontSize: "12px",
                                 fontWeight: "500",
-                                background: "#fff3cd",
-                                color: "#856404",
-                                whiteSpace: "nowrap",
-                                display: "inline-block"
+                                background: "#fed7aa",
+                                color: "#9a3412",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "6px",
+                                whiteSpace: "nowrap"
                               }}>
+                                <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#f97316" }}></div>
                                 En cours de traitement
                               </span>
                             </td>
                             <td style={{ padding: "12px 16px" }}>
                               <span style={{
-                                padding: "4px 8px",
-                                borderRadius: "4px",
+                                padding: "4px 10px",
+                                borderRadius: "12px",
                                 fontSize: "12px",
                                 fontWeight: "500",
                                 background: t.priority === "critique" ? "#fee2e2" : t.priority === "haute" ? "#fed7aa" : t.priority === "moyenne" ? "#dbeafe" : t.priority === "faible" ? "#fee2e2" : "#e5e7eb",
@@ -1985,12 +1990,12 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
                             <td style={{ padding: "12px 16px" }}>{t.title}</td>
                             <td style={{ padding: "12px 16px" }}>
                               <span style={{
-                                padding: "4px 8px",
-                                borderRadius: "4px",
+                                padding: "6px 12px",
+                                borderRadius: "20px",
                                 fontSize: "12px",
                                 fontWeight: "500",
-                                background: t.status === "resolu" ? "#d4edda" : "#6c757d",
-                                color: t.status === "resolu" ? "#155724" : "white",
+                                background: t.status === "resolu" ? "#d4edda" : t.status === "cloture" ? "#e5e7eb" : "#6c757d",
+                                color: t.status === "resolu" ? "#155724" : t.status === "cloture" ? "#374151" : "white",
                                 whiteSpace: "nowrap",
                                 display: "inline-block"
                               }}>
@@ -1999,8 +2004,8 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
                             </td>
                             <td style={{ padding: "12px 16px" }}>
                               <span style={{
-                                padding: "4px 8px",
-                                borderRadius: "4px",
+                                padding: "4px 10px",
+                                borderRadius: "12px",
                                 fontSize: "12px",
                                 fontWeight: "500",
                                 background: t.priority === "critique" ? "#fee2e2" : t.priority === "haute" ? "#fed7aa" : t.priority === "moyenne" ? "#dbeafe" : t.priority === "faible" ? "#fee2e2" : "#e5e7eb",
@@ -2087,8 +2092,8 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
                             <td style={{ padding: "12px 16px" }}>{t.title}</td>
                             <td style={{ padding: "12px 16px" }}>
                               <span style={{
-                                padding: "4px 8px",
-                                borderRadius: "4px",
+                                padding: "6px 12px",
+                                borderRadius: "20px",
                                 fontSize: "12px",
                                 fontWeight: "500",
                                 background: "#fee2e2",
@@ -2101,8 +2106,8 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
                             </td>
                             <td style={{ padding: "12px 16px" }}>
                               <span style={{
-                                padding: "4px 8px",
-                                borderRadius: "4px",
+                                padding: "4px 10px",
+                                borderRadius: "12px",
                                 fontSize: "12px",
                                 fontWeight: "500",
                                 background: t.priority === "critique" ? "#fee2e2" : t.priority === "haute" ? "#fed7aa" : t.priority === "moyenne" ? "#dbeafe" : t.priority === "faible" ? "#fee2e2" : "#e5e7eb",
@@ -2351,13 +2356,14 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
                         <h3 style={{ margin: 0, fontSize: "18px", fontWeight: "600", color: "#333" }}>Détails du ticket #{selectedNotificationTicketDetails.number}</h3>
                         {selectedNotificationTicketDetails.status === "rejete" && (
                           <span style={{
-                            padding: "6px 10px",
-                            borderRadius: "16px",
+                            padding: "6px 12px",
+                            borderRadius: "20px",
                             fontSize: "12px",
-                            fontWeight: 600,
+                            fontWeight: "500",
                             background: "#fee2e2",
                             color: "#991b1b",
-                            border: "1px solid #fecaca"
+                            whiteSpace: "nowrap",
+                            display: "inline-block"
                           }}>
                             Rejeté
                           </span>
@@ -2396,12 +2402,12 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
                             <strong>Priorité :</strong>
                             <span style={{
                               marginLeft: "8px",
-                              padding: "4px 8px",
-                              borderRadius: "4px",
+                              padding: "4px 10px",
+                              borderRadius: "12px",
                               fontSize: "12px",
                               fontWeight: "500",
-                              background: selectedNotificationTicketDetails.priority === "critique" ? "#f44336" : selectedNotificationTicketDetails.priority === "haute" ? "#fed7aa" : selectedNotificationTicketDetails.priority === "moyenne" ? "#ffc107" : "#9e9e9e",
-                              color: selectedNotificationTicketDetails.priority === "haute" ? "#92400e" : "white"
+                              background: selectedNotificationTicketDetails.priority === "critique" ? "#f44336" : selectedNotificationTicketDetails.priority === "haute" ? "#fed7aa" : selectedNotificationTicketDetails.priority === "moyenne" ? "#dbeafe" : "#9e9e9e",
+                              color: selectedNotificationTicketDetails.priority === "haute" ? "#92400e" : selectedNotificationTicketDetails.priority === "moyenne" ? "#1e40af" : "white"
                             }}>
                               {selectedNotificationTicketDetails.priority}
                             </span>
@@ -2727,12 +2733,12 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
                 <strong>Priorité :</strong>
                 <span style={{
                   marginLeft: "8px",
-                  padding: "4px 8px",
-                  borderRadius: "4px",
+                  padding: "4px 10px",
+                  borderRadius: "12px",
                   fontSize: "12px",
                   fontWeight: "500",
-                  background: ticketDetails.priority === "critique" ? "#f44336" : ticketDetails.priority === "haute" ? "#fed7aa" : ticketDetails.priority === "moyenne" ? "#ffc107" : "#9e9e9e",
-                  color: ticketDetails.priority === "haute" ? "#92400e" : "white"
+                  background: ticketDetails.priority === "critique" ? "#f44336" : ticketDetails.priority === "haute" ? "#fed7aa" : ticketDetails.priority === "moyenne" ? "#dbeafe" : "#9e9e9e",
+                  color: ticketDetails.priority === "haute" ? "#92400e" : ticketDetails.priority === "moyenne" ? "#1e40af" : "white"
                 }}>
                   {ticketDetails.priority}
                 </span>
@@ -3248,12 +3254,12 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
                         <strong>Priorité :</strong>
                         <span style={{
                           marginLeft: "8px",
-                          padding: "4px 8px",
-                          borderRadius: "4px",
+                          padding: "4px 10px",
+                          borderRadius: "12px",
                           fontSize: "12px",
                           fontWeight: "500",
-                          background: selectedNotificationTicketDetails.priority === "critique" ? "#f44336" : selectedNotificationTicketDetails.priority === "haute" ? "#fed7aa" : selectedNotificationTicketDetails.priority === "moyenne" ? "#ffc107" : "#9e9e9e",
-                          color: selectedNotificationTicketDetails.priority === "haute" ? "#92400e" : "white"
+                          background: selectedNotificationTicketDetails.priority === "critique" ? "#f44336" : selectedNotificationTicketDetails.priority === "haute" ? "#fed7aa" : selectedNotificationTicketDetails.priority === "moyenne" ? "#dbeafe" : "#9e9e9e",
+                          color: selectedNotificationTicketDetails.priority === "haute" ? "#92400e" : selectedNotificationTicketDetails.priority === "moyenne" ? "#1e40af" : "white"
                         }}>
                           {selectedNotificationTicketDetails.priority}
                         </span>

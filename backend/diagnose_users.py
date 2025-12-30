@@ -29,10 +29,10 @@ def diagnose_users():
             issues = []
             
             # Vérifier le statut
-            if not user.status or user.status.lower() not in ["actif", "active"]:
-                issues.append(f"❌ Statut invalide: '{user.status}' (doit être 'actif' ou 'active')")
+            if not user.actif:
+                issues.append(f"❌ Utilisateur inactif (actif=False)")
             else:
-                issues.append(f"✅ Statut: {user.status}")
+                issues.append(f"✅ Utilisateur actif (actif=True)")
             
             # Vérifier le rôle
             if not user.role_id:

@@ -60,7 +60,7 @@ def create_ticket(
                 .options(joinedload(models.User.role))
                 .filter(
                     models.User.role_id == role.id,
-                    func.lower(models.User.status).in_(["actif", "active"])
+                    models.User.actif == True
                 )
                 .all()
             )
@@ -620,7 +620,7 @@ def escalate_ticket(
     for role in dsi_roles:
         dsi_users = db.query(models.User).filter(
             models.User.role_id == role.id,
-            models.User.status == "actif"
+            models.User.actif == True
         ).all()
         for dsi_user in dsi_users:
             # Ne pas notifier l'utilisateur qui a escaladé
@@ -1040,7 +1040,7 @@ def validate_ticket_resolution(
         for role in admin_roles:
             admin_users = db.query(models.User).filter(
                 models.User.role_id == role.id,
-                models.User.status == "actif"
+                models.User.actif == True
             ).all()
             for admin_user in admin_users:
                 admin_notification = models.Notification(
@@ -1407,7 +1407,7 @@ def reopen_ticket_by_user(
             .options(joinedload(models.User.role))
             .filter(
                 models.User.role_id == role.id,
-                func.lower(models.User.status).in_(["actif", "active"])
+                models.User.actif == True
             )
             .all()
         )

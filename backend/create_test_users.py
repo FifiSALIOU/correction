@@ -29,7 +29,7 @@ def create_test_users():
                 password_hash=get_password_hash("user123"),
                 role_id=user_role.id,
                 agency="Agence Paris",
-                status="actif"
+                actif=True
             )
             db.add(user1)
             print("OK - Utilisateur cree: user1 (password: user123)")
@@ -44,7 +44,7 @@ def create_test_users():
                 password_hash=get_password_hash("tech123"),
                 role_id=tech_role.id,
                 agency="Agence IT",
-                status="actif",
+                actif=True,
                 specialization="materiel"
             )
             db.add(tech1)
@@ -64,7 +64,7 @@ def create_test_users():
                 password_hash=get_password_hash("tech123"),
                 role_id=tech_role.id,
                 agency="Agence IT",
-                status="actif",
+                actif=True,
                 specialization="applicatif"
             )
             db.add(tech2)
@@ -84,7 +84,7 @@ def create_test_users():
                 password_hash=get_password_hash("secretary123"),
                 role_id=secretary_role.id,
                 agency="Agence IT",
-                status="actif"
+                actif=True
             )
             db.add(secretary1)
             print("OK - Secretaire DSI creee: secretary1 (password: secretary123)")
@@ -99,7 +99,7 @@ def create_test_users():
                 password_hash=get_password_hash("adjoint123"),
                 role_id=adjoint_role.id,
                 agency="Agence IT",
-                status="actif"
+                actif=True
             )
             db.add(adjoint1)
             print("OK - Adjoint DSI cree: adjoint1 (password: adjoint123)")
@@ -114,7 +114,7 @@ def create_test_users():
                 password_hash=get_password_hash("dsi123"),
                 role_id=dsi_role.id,
                 agency="Agence IT",
-                status="actif"
+                actif=True
             )
             db.add(dsi1)
             print("OK - DSI cree: dsi1 (password: dsi123)")

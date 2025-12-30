@@ -63,7 +63,7 @@ def init_admin_user(db):
             password_hash=get_password_hash("admin123"),  # Changez ce mot de passe en production !
             role_id=admin_role.id,
             agency="Agence IT",
-            status="actif"
+            actif=True
         )
         db.add(admin_user)
         db.commit()
@@ -93,29 +93,37 @@ def init_ticket_types_and_categories(db):
     # Catégories de tickets
     existing_categories = db.query(models.TicketCategory).count()
     if existing_categories == 0:
+        # Récupérer les IDs des types depuis la base
+        materiel_type = db.query(models.TicketTypeModel).filter(models.TicketTypeModel.code == "materiel").first()
+        applicatif_type = db.query(models.TicketTypeModel).filter(models.TicketTypeModel.code == "applicatif").first()
+        
+        if not materiel_type or not applicatif_type:
+            print("ERREUR: Les types de tickets (materiel, applicatif) doivent exister avant de créer les catégories")
+            return
+        
         default_categories = [
             # Matériel
-            {"name": "Ordinateur portable", "description": None, "type_code": "materiel"},
-            {"name": "Ordinateur de bureau", "description": None, "type_code": "materiel"},
-            {"name": "Imprimante", "description": None, "type_code": "materiel"},
-            {"name": "Scanner", "description": None, "type_code": "materiel"},
-            {"name": "Écran/Moniteur", "description": None, "type_code": "materiel"},
-            {"name": "Clavier/Souris", "description": None, "type_code": "materiel"},
-            {"name": "Réseau (Switch, Routeur)", "description": None, "type_code": "materiel"},
-            {"name": "Serveur", "description": None, "type_code": "materiel"},
-            {"name": "Téléphone/IP Phone", "description": None, "type_code": "materiel"},
-            {"name": "Autre matériel", "description": None, "type_code": "materiel"},
+            {"name": "Ordinateur portable", "description": None, "ticket_type_id": materiel_type.id},
+            {"name": "Ordinateur de bureau", "description": None, "ticket_type_id": materiel_type.id},
+            {"name": "Imprimante", "description": None, "ticket_type_id": materiel_type.id},
+            {"name": "Scanner", "description": None, "ticket_type_id": materiel_type.id},
+            {"name": "Écran/Moniteur", "description": None, "ticket_type_id": materiel_type.id},
+            {"name": "Clavier/Souris", "description": None, "ticket_type_id": materiel_type.id},
+            {"name": "Réseau (Switch, Routeur)", "description": None, "ticket_type_id": materiel_type.id},
+            {"name": "Serveur", "description": None, "ticket_type_id": materiel_type.id},
+            {"name": "Téléphone/IP Phone", "description": None, "ticket_type_id": materiel_type.id},
+            {"name": "Autre matériel", "description": None, "ticket_type_id": materiel_type.id},
             # Applicatif
-            {"name": "Système d'exploitation", "description": None, "type_code": "applicatif"},
-            {"name": "Logiciel bureautique", "description": None, "type_code": "applicatif"},
-            {"name": "Application métier", "description": None, "type_code": "applicatif"},
-            {"name": "Email/Messagerie", "description": None, "type_code": "applicatif"},
-            {"name": "Navigateur web", "description": None, "type_code": "applicatif"},
-            {"name": "Base de données", "description": None, "type_code": "applicatif"},
-            {"name": "Sécurité/Antivirus", "description": None, "type_code": "applicatif"},
-            {"name": "Application web", "description": None, "type_code": "applicatif"},
-            {"name": "API/Service", "description": None, "type_code": "applicatif"},
-            {"name": "Autre applicatif", "description": None, "type_code": "applicatif"},
+            {"name": "Système d'exploitation", "description": None, "ticket_type_id": applicatif_type.id},
+            {"name": "Logiciel bureautique", "description": None, "ticket_type_id": applicatif_type.id},
+            {"name": "Application métier", "description": None, "ticket_type_id": applicatif_type.id},
+            {"name": "Email/Messagerie", "description": None, "ticket_type_id": applicatif_type.id},
+            {"name": "Navigateur web", "description": None, "ticket_type_id": applicatif_type.id},
+            {"name": "Base de données", "description": None, "ticket_type_id": applicatif_type.id},
+            {"name": "Sécurité/Antivirus", "description": None, "ticket_type_id": applicatif_type.id},
+            {"name": "Application web", "description": None, "ticket_type_id": applicatif_type.id},
+            {"name": "API/Service", "description": None, "ticket_type_id": applicatif_type.id},
+            {"name": "Autre applicatif", "description": None, "ticket_type_id": applicatif_type.id},
         ]
         for c in default_categories:
             db.add(models.TicketCategory(**c))
@@ -131,25 +139,6 @@ def main():
     Base.metadata.create_all(bind=engine)
     print("OK - Tables creees")
 
-    # S'assurer que la table ticket_categories possède bien la colonne type_code
-    try:
-        with engine.begin() as conn:
-            conn.execute(
-                text(
-                    "ALTER TABLE ticket_categories "
-                    "ADD COLUMN IF NOT EXISTS type_code VARCHAR(50) "
-                    "DEFAULT 'materiel' NOT NULL"
-                )
-            )
-            conn.execute(
-                text(
-                    "ALTER TABLE ticket_categories "
-                    "ALTER COLUMN type_code DROP DEFAULT"
-                )
-            )
-    except Exception as e:
-        print(f"Attention: impossible de vérifier/ajouter la colonne type_code sur ticket_categories: {e}")
-    
     # Initialiser les rôles
     print("\nCreation des roles...")
     db = SessionLocal()

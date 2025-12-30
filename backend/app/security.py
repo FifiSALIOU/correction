@@ -63,8 +63,8 @@ def authenticate_user(db: Session, username: str, password: str) -> Optional[mod
     if not user:
         return None
     
-    # Vérifier le statut de l'utilisateur (actif ou active)
-    if user.status and user.status.lower() not in ["actif", "active"]:
+    # Vérifier le statut de l'utilisateur (doit être actif)
+    if not user.actif:
         return None
     
     # Vérifier le mot de passe

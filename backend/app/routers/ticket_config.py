@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from .. import models, schemas
 from ..database import get_db
@@ -39,13 +39,29 @@ def get_ticket_categories(
     Récupère la liste des catégories de tickets configurées dans la base.
     Si un type_code est fourni, filtre les catégories pour ce type.
     """
-    query = db.query(models.TicketCategory).filter(models.TicketCategory.is_active.is_(True))
+    query = (
+        db.query(models.TicketCategory)
+        .options(joinedload(models.TicketCategory.ticket_type))
+        .filter(models.TicketCategory.is_active.is_(True))
+    )
 
     if type_code:
-        query = query.filter(models.TicketCategory.type_code == type_code)
+        # Filtrer par le code du type via la jointure
+        query = query.join(models.TicketTypeModel).filter(models.TicketTypeModel.code == type_code)
 
     categories = query.order_by(models.TicketCategory.name.asc()).all()
-    return categories
+    
+    # Convertir en schéma avec type_code depuis la relation
+    result = []
+    for cat in categories:
+        result.append(schemas.TicketCategoryConfig(
+            id=cat.id,
+            name=cat.name,
+            description=cat.description,
+            type_code=cat.ticket_type.code if cat.ticket_type else "",
+            is_active=cat.is_active
+        ))
+    return result
 
 
 

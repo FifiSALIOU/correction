@@ -21,7 +21,7 @@ def list_dsi_emails():
         if dsi_role:
             dsi_users = db.query(models.User).filter(
                 models.User.role_id == dsi_role.id,
-                models.User.status == "actif"
+                models.User.actif == True
             ).all()
             
             print(f"DSI ({len(dsi_users)} utilisateur(s)):")
@@ -42,7 +42,7 @@ def list_dsi_emails():
         if secretary_role:
             secretary_users = db.query(models.User).filter(
                 models.User.role_id == secretary_role.id,
-                models.User.status == "actif"
+                models.User.actif == True
             ).all()
             
             print(f"SECRETAIRES DSI ({len(secretary_users)} utilisateur(s)):")
@@ -63,7 +63,7 @@ def list_dsi_emails():
         if adjoint_role:
             adjoint_users = db.query(models.User).filter(
                 models.User.role_id == adjoint_role.id,
-                models.User.status == "actif"
+                models.User.actif == True
             ).all()
             
             print(f"ADJOINTS DSI ({len(adjoint_users)} utilisateur(s)):")

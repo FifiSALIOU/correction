@@ -40,7 +40,7 @@ def list_technicians(
         db.query(models.User)
         .filter(
             models.User.role_id == technician_role.id,
-            models.User.status == "actif"
+            models.User.actif == True
         )
         .all()
     )
@@ -79,11 +79,8 @@ def list_technicians(
                 "name": tech.role.name,
                 "description": tech.role.description,
             },
-            "status": tech.status,
+            "actif": tech.actif,
             "specialization": tech.specialization,
-            # Statut de disponibilité et horaires tels que définis pour le technicien
-            "availability_status": tech.availability_status,
-            "work_hours": tech.work_hours,
             "assigned_tickets_count": assigned_count,
             "in_progress_tickets_count": in_progress_count,
         }
@@ -165,7 +162,7 @@ def get_technician_stats(
         .count()
     )
     
-    # Déterminer le statut de disponibilité basé sur la charge de travail
+    # Compter les tickets en cours pour les statistiques
     in_progress_count = (
         db.query(models.Ticket)
         .filter(
@@ -175,10 +172,8 @@ def get_technician_stats(
         .count()
     )
     
-    # Logique simple par défaut : disponible si moins de 3 tickets en cours, occupé sinon.
-    # Mais si un statut manuel est défini pour le technicien, il est prioritaire.
-    auto_availability_status = "disponible" if in_progress_count < 3 else "occupé"
-    effective_availability_status = technician.availability_status or auto_availability_status
+    # Disponibilité basée uniquement sur actif (True/False)
+    is_available = technician.actif
     
     # Calculer le temps de réponse moyen (temps entre assignation et première action du technicien)
     # Le temps de réponse = temps entre assigned_at et le moment où le ticket passe à "en_cours"
@@ -233,9 +228,6 @@ def get_technician_stats(
         .count()
     )
     
-    # Horaires de travail : utiliser ceux du technicien, sinon une valeur par défaut (08:00-13:00 / 14:00-17:00)
-    work_hours = technician.work_hours or "08:00-13:00 / 14:00-17:00"
-    
     return {
         "id": str(technician.id),
         "full_name": technician.full_name,
@@ -243,7 +235,7 @@ def get_technician_stats(
         "phone": technician.phone,
         "agency": technician.agency,
         "specialization": technician.specialization,
-        "status": technician.status,
+        "actif": technician.actif,
         "last_login_at": technician.last_login_at.isoformat() if technician.last_login_at else None,
         "assigned_tickets_count": total_assigned,
         "in_progress_tickets_count": in_progress_count,
@@ -254,10 +246,9 @@ def get_technician_stats(
         "avg_resolution_time_days": avg_resolution_time,
         "avg_response_time_minutes": avg_response_time_minutes,
         "success_rate": success_rate,
-        # Statut de disponibilité effectif (manuel prioritaire, sinon calculé automatiquement)
-        "availability_status": effective_availability_status,
-        "workload_ratio": workload_ratio,
-        "work_hours": work_hours
+        # Disponibilité basée uniquement sur actif (True/False)
+        "is_available": is_available,
+        "workload_ratio": workload_ratio
     }
 
 
@@ -300,11 +291,9 @@ def create_user(
         password_hash=get_password_hash(user_in.password),
         role_id=user_in.role_id,
         specialization=user_in.specialization,
-        work_hours=user_in.work_hours,
-        availability_status=user_in.availability_status or "disponible",
         max_tickets_capacity=user_in.max_tickets_capacity,
         notes=user_in.notes,
-        status="actif"
+        actif=True
     )
     db.add(db_user)
     db.commit()
@@ -337,9 +326,8 @@ def list_all_users(
                 "name": user.role.name,
                 "description": user.role.description
             },
-            "status": user.status,
-            "specialization": user.specialization,
-            "is_active": user.status == "actif" if hasattr(user, "status") else True
+            "actif": user.actif,
+            "specialization": user.specialization
         }
         result.append(user_dict)
     
@@ -398,14 +386,10 @@ def update_user(
         user.agency = user_update.agency
     if user_update.phone is not None:
         user.phone = user_update.phone
-    if user_update.status is not None:
-        user.status = user_update.status
+    if user_update.actif is not None:
+        user.actif = user_update.actif
     if user_update.specialization is not None:
         user.specialization = user_update.specialization
-    if user_update.work_hours is not None:
-        user.work_hours = user_update.work_hours
-    if user_update.availability_status is not None:
-        user.availability_status = user_update.availability_status
     if user_update.max_tickets_capacity is not None:
         user.max_tickets_capacity = user_update.max_tickets_capacity
     if user_update.notes is not None:
@@ -456,7 +440,7 @@ def delete_user(
     
     if created_tickets > 0 or assigned_tickets > 0:
         # Au lieu de supprimer, désactiver l'utilisateur
-        user.status = "inactif"
+        user.actif = False
         db.commit()
         return {"message": "User deactivated (has associated tickets)", "user_id": str(user_id)}
     
@@ -464,40 +448,6 @@ def delete_user(
     db.commit()
     
     return {"message": "User deleted successfully", "user_id": str(user_id)}
-
-
-@router.put("/me/availability-status", response_model=schemas.UserRead)
-def update_my_availability_status(
-    status_update: schemas.AvailabilityStatusUpdate,
-    db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_user),
-):
-    """Permet au technicien de mettre à jour son propre statut de disponibilité"""
-    # Vérifier que l'utilisateur est un technicien
-    if not current_user.role or current_user.role.name != "Technicien":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only technicians can update their availability status"
-        )
-    
-    # Valider le statut
-    valid_statuses = ["disponible", "occupé", "en pause"]
-    if status_update.availability_status not in valid_statuses:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid availability status. Must be one of: {', '.join(valid_statuses)}"
-        )
-    
-    # Mettre à jour le statut
-    current_user.availability_status = status_update.availability_status
-    db.commit()
-    db.refresh(current_user)
-    
-    # Charger le rôle pour la réponse
-    if current_user.role_id:
-        current_user.role = db.query(models.Role).filter(models.Role.id == current_user.role_id).first()
-    
-    return current_user
 
 
 @router.post("/{user_id}/reset-password")
