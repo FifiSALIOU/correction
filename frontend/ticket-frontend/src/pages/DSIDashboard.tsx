@@ -274,7 +274,7 @@ function DSIDashboard({ token }: DSIDashboardProps) {
     return [
       { id: 1, priority: "Critique", level: 1, color: "#dc3545", maxTime: "1 heure", maxTimeValue: 1, maxTimeUnit: "heure" },
       { id: 2, priority: "Haute", level: 2, color: "#fed7aa", maxTime: "4 heures", maxTimeValue: 4, maxTimeUnit: "heures" },
-      { id: 3, priority: "Moyenne", level: 3, color: "#ffc107", maxTime: "1 jour", maxTimeValue: 1, maxTimeUnit: "jour" },
+      { id: 3, priority: "Moyenne", level: 3, color: "#0DADDB", maxTime: "1 jour", maxTimeValue: 1, maxTimeUnit: "jour" },
       { id: 4, priority: "Basse", level: 4, color: "#28a745", maxTime: "3 jours", maxTimeValue: 3, maxTimeUnit: "jours" }
     ];
   });
@@ -2624,7 +2624,7 @@ function DSIDashboard({ token }: DSIDashboardProps) {
   const priorityColors = {
     'Critique': '#ef4444',
     'Haute': '#f97316',
-    'Moyenne': '#f59e0b',
+    'Moyenne': '#0DADDB',
     'Faible': '#6b7280'
   };
 
@@ -5641,8 +5641,8 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                         borderRadius: "20px",
                         fontSize: "12px",
                         fontWeight: "500",
-                        background: t.priority === "critique" ? "#fee2e2" : t.priority === "haute" ? "#fed7aa" : t.priority === "moyenne" ? "#dbeafe" : t.priority === "faible" ? "#fee2e2" : "#e5e7eb",
-                        color: t.priority === "critique" ? "#991b1b" : t.priority === "haute" ? "#92400e" : t.priority === "moyenne" ? "#1e40af" : t.priority === "faible" ? "#991b1b" : "#374151"
+                        background: t.priority === "critique" ? "#fee2e2" : t.priority === "haute" ? "#fed7aa" : t.priority === "moyenne" ? "rgba(13, 173, 219, 0.1)" : t.priority === "faible" ? "#fee2e2" : "#e5e7eb",
+                        color: t.priority === "critique" ? "#991b1b" : t.priority === "haute" ? "#92400e" : t.priority === "moyenne" ? "#0DADDB" : t.priority === "faible" ? "#991b1b" : "#374151"
                       }}>
                         {t.priority}
                       </span>
@@ -5653,13 +5653,13 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                         borderRadius: "20px",
                         fontSize: "12px",
                         fontWeight: "500",
-                        background: t.status === "en_attente_analyse" ? "#fef3c7" : 
+                        background: t.status === "en_attente_analyse" ? "rgba(13, 173, 219, 0.1)" : 
                                    t.status === "assigne_technicien" ? "#f0f9ff" : 
                                    t.status === "en_cours" ? "#fed7aa" : 
                                    t.status === "resolu" ? "#d4edda" : 
                                    t.status === "cloture" ? "#e5e7eb" :
                                    t.status === "rejete" ? "#fee2e2" : "#e5e7eb",
-                        color: t.status === "en_attente_analyse" ? "#92400e" : 
+                        color: t.status === "en_attente_analyse" ? "#0DADDB" : 
                                t.status === "assigne_technicien" ? "#0c4a6e" : 
                                t.status === "en_cours" ? "#9a3412" : 
                                t.status === "resolu" ? "#155724" : 
@@ -6162,7 +6162,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                     const priorityColors: { [key: string]: string } = {
                       'Critique': '#ef4444',
                       'Haute': '#f97316',
-                      'Moyenne': '#3b82f6',
+                      'Moyenne': '#0DADDB',
                       'Faible': '#6b7280'
                     };
                     return <Cell key={`cell-priority-${index}`} fill={priorityColors[entry.priorité] || '#3b82f6'} />;
@@ -6717,8 +6717,8 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                             borderRadius: "20px",
                             fontSize: "12px",
                             fontWeight: "500",
-                            background: t.priority === "critique" ? "#fee2e2" : t.priority === "haute" ? "#fed7aa" : t.priority === "moyenne" ? "#dbeafe" : t.priority === "faible" ? "#fee2e2" : "#e5e7eb",
-                            color: t.priority === "critique" ? "#991b1b" : t.priority === "haute" ? "#92400e" : t.priority === "moyenne" ? "#1e40af" : t.priority === "faible" ? "#991b1b" : "#374151"
+                            background: t.priority === "critique" ? "#fee2e2" : t.priority === "haute" ? "#fed7aa" : t.priority === "moyenne" ? "rgba(13, 173, 219, 0.1)" : t.priority === "faible" ? "#fee2e2" : "#e5e7eb",
+                            color: t.priority === "critique" ? "#991b1b" : t.priority === "haute" ? "#92400e" : t.priority === "moyenne" ? "#0DADDB" : t.priority === "faible" ? "#991b1b" : "#374151"
                           }}>
                             {t.priority}
                           </span>
@@ -6729,13 +6729,13 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                             borderRadius: "20px",
                             fontSize: "12px",
                             fontWeight: "500",
-                            background: t.status === "en_attente_analyse" ? "#fef3c7" : 
+                            background: t.status === "en_attente_analyse" ? "rgba(13, 173, 219, 0.1)" : 
                                        t.status === "assigne_technicien" ? "#f0f9ff" : 
                                        t.status === "en_cours" ? "#fed7aa" : 
                                        t.status === "resolu" ? "#d4edda" : 
                                        t.status === "cloture" ? "#e5e7eb" :
                                        t.status === "rejete" ? "#fee2e2" : "#e5e7eb",
-                            color: t.status === "en_attente_analyse" ? "#92400e" : 
+                            color: t.status === "en_attente_analyse" ? "#0DADDB" : 
                                    t.status === "assigne_technicien" ? "#0c4a6e" : 
                                    t.status === "en_cours" ? "#9a3412" : 
                                    t.status === "resolu" ? "#155724" : 
@@ -7322,7 +7322,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                           const priorityData = [
                             { name: "Critique", value: allTickets.filter((t) => t.priority === "critique").length, color: "#E8B4B8" }, // Rose doux
                             { name: "Haute", value: allTickets.filter((t) => t.priority === "haute").length, color: "#F4A460" }, // Sable/Beige
-                            { name: "Moyenne", value: allTickets.filter((t) => t.priority === "moyenne").length, color: "#87CEEB" }, // Bleu ciel
+                            { name: "Moyenne", value: allTickets.filter((t) => t.priority === "moyenne").length, color: "#0DADDB" }, // Bleu cyan
                             { name: "Faible", value: allTickets.filter((t) => t.priority === "faible").length, color: "#98D8C8" } // Vert menthe
                           ].filter(item => item.value > 0); // Ne garder que les priorités avec des tickets
                           
@@ -13183,7 +13183,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                           borderRadius: "4px",
                           fontSize: "12px",
                           fontWeight: "500",
-                          background: selectedNotificationTicketDetails.priority === "critique" ? "#f44336" : selectedNotificationTicketDetails.priority === "haute" ? "#fed7aa" : selectedNotificationTicketDetails.priority === "moyenne" ? "#ffc107" : "#9e9e9e",
+                          background: selectedNotificationTicketDetails.priority === "critique" ? "#f44336" : selectedNotificationTicketDetails.priority === "haute" ? "#fed7aa" : selectedNotificationTicketDetails.priority === "moyenne" ? "rgba(13, 173, 219, 0.1)" : "#9e9e9e",
                           color: selectedNotificationTicketDetails.priority === "haute" ? "#92400e" : "white"
                         }}>
                           {selectedNotificationTicketDetails.priority}
@@ -14688,7 +14688,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                           borderRadius: "4px",
                           fontSize: "12px",
                           fontWeight: "500",
-                          background: selectedNotificationTicketDetails.priority === "critique" ? "#f44336" : selectedNotificationTicketDetails.priority === "haute" ? "#fed7aa" : selectedNotificationTicketDetails.priority === "moyenne" ? "#ffc107" : "#9e9e9e",
+                          background: selectedNotificationTicketDetails.priority === "critique" ? "#f44336" : selectedNotificationTicketDetails.priority === "haute" ? "#fed7aa" : selectedNotificationTicketDetails.priority === "moyenne" ? "rgba(13, 173, 219, 0.1)" : "#9e9e9e",
                           color: selectedNotificationTicketDetails.priority === "haute" ? "#92400e" : "white"
                         }}>
                           {selectedNotificationTicketDetails.priority}
@@ -14810,7 +14810,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                   borderRadius: ticketDetails.priority === "critique" ? "20px" : "4px",
                   fontSize: "12px",
                   fontWeight: "500",
-                  background: ticketDetails.priority === "critique" ? "#fee2e2" : ticketDetails.priority === "haute" ? "#fed7aa" : ticketDetails.priority === "moyenne" ? "#ffc107" : "#9e9e9e",
+                  background: ticketDetails.priority === "critique" ? "#fee2e2" : ticketDetails.priority === "haute" ? "#fed7aa" : ticketDetails.priority === "moyenne" ? "rgba(13, 173, 219, 0.1)" : "#9e9e9e",
                   color: ticketDetails.priority === "critique" ? "#991b1b" : ticketDetails.priority === "haute" ? "#92400e" : "white"
                 }}>
                   {ticketDetails.priority}

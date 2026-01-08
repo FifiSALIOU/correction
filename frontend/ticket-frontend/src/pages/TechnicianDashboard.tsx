@@ -1560,8 +1560,8 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
                                 borderRadius: "12px",
                                 fontSize: "12px",
                                 fontWeight: "500",
-                                background: t.priority === "critique" ? "#fee2e2" : t.priority === "haute" ? "#fed7aa" : t.priority === "moyenne" ? "#dbeafe" : t.priority === "faible" ? "#fee2e2" : "#e5e7eb",
-                                color: t.priority === "critique" ? "#991b1b" : t.priority === "haute" ? "#92400e" : t.priority === "moyenne" ? "#1e40af" : t.priority === "faible" ? "#991b1b" : "#374151"
+                                background: t.priority === "critique" ? "#fee2e2" : t.priority === "haute" ? "#fed7aa" : t.priority === "moyenne" ? "rgba(13, 173, 219, 0.1)" : t.priority === "faible" ? "#fee2e2" : "#e5e7eb",
+                                color: t.priority === "critique" ? "#991b1b" : t.priority === "haute" ? "#92400e" : t.priority === "moyenne" ? "#0DADDB" : t.priority === "faible" ? "#991b1b" : "#374151"
                               }}>
                                 {t.priority}
                               </span>
@@ -1747,8 +1747,8 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
                                 borderRadius: "12px",
                                 fontSize: "12px",
                                 fontWeight: "500",
-                                background: t.priority === "critique" ? "#fee2e2" : t.priority === "haute" ? "#fed7aa" : t.priority === "moyenne" ? "#dbeafe" : t.priority === "faible" ? "#fee2e2" : "#e5e7eb",
-                                color: t.priority === "critique" ? "#991b1b" : t.priority === "haute" ? "#92400e" : t.priority === "moyenne" ? "#1e40af" : t.priority === "faible" ? "#991b1b" : "#374151"
+                                background: t.priority === "critique" ? "#fee2e2" : t.priority === "haute" ? "#fed7aa" : t.priority === "moyenne" ? "rgba(13, 173, 219, 0.1)" : t.priority === "faible" ? "#fee2e2" : "#e5e7eb",
+                                color: t.priority === "critique" ? "#991b1b" : t.priority === "haute" ? "#92400e" : t.priority === "moyenne" ? "#0DADDB" : t.priority === "faible" ? "#991b1b" : "#374151"
                               }}>
                                 {t.priority}
                               </span>
@@ -1992,8 +1992,8 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
                                 borderRadius: "12px",
                                 fontSize: "12px",
                                 fontWeight: "500",
-                                background: t.priority === "critique" ? "#fee2e2" : t.priority === "haute" ? "#fed7aa" : t.priority === "moyenne" ? "#dbeafe" : t.priority === "faible" ? "#fee2e2" : "#e5e7eb",
-                                color: t.priority === "critique" ? "#991b1b" : t.priority === "haute" ? "#92400e" : t.priority === "moyenne" ? "#1e40af" : t.priority === "faible" ? "#991b1b" : "#374151"
+                                background: t.priority === "critique" ? "#fee2e2" : t.priority === "haute" ? "#fed7aa" : t.priority === "moyenne" ? "rgba(13, 173, 219, 0.1)" : t.priority === "faible" ? "#fee2e2" : "#e5e7eb",
+                                color: t.priority === "critique" ? "#991b1b" : t.priority === "haute" ? "#92400e" : t.priority === "moyenne" ? "#0DADDB" : t.priority === "faible" ? "#991b1b" : "#374151"
                               }}>
                                 {t.priority}
                               </span>
@@ -2091,8 +2091,8 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
                                 borderRadius: "12px",
                                 fontSize: "12px",
                                 fontWeight: "500",
-                                background: t.priority === "critique" ? "#fee2e2" : t.priority === "haute" ? "#fed7aa" : t.priority === "moyenne" ? "#dbeafe" : t.priority === "faible" ? "#fee2e2" : "#e5e7eb",
-                                color: t.priority === "critique" ? "#991b1b" : t.priority === "haute" ? "#92400e" : t.priority === "moyenne" ? "#1e40af" : t.priority === "faible" ? "#991b1b" : "#374151"
+                                background: t.priority === "critique" ? "#fee2e2" : t.priority === "haute" ? "#fed7aa" : t.priority === "moyenne" ? "rgba(13, 173, 219, 0.1)" : t.priority === "faible" ? "#fee2e2" : "#e5e7eb",
+                                color: t.priority === "critique" ? "#991b1b" : t.priority === "haute" ? "#92400e" : t.priority === "moyenne" ? "#0DADDB" : t.priority === "faible" ? "#991b1b" : "#374151"
                               }}>
                                 {t.priority}
                               </span>
@@ -2193,8 +2193,8 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
                                 borderRadius: "12px",
                                 fontSize: "12px",
                                 fontWeight: "500",
-                                background: t.priority === "critique" ? "#fee2e2" : t.priority === "haute" ? "#fed7aa" : t.priority === "moyenne" ? "#dbeafe" : t.priority === "faible" ? "#fee2e2" : "#e5e7eb",
-                                color: t.priority === "critique" ? "#991b1b" : t.priority === "haute" ? "#92400e" : t.priority === "moyenne" ? "#1e40af" : t.priority === "faible" ? "#991b1b" : "#374151"
+                                background: t.priority === "critique" ? "#fee2e2" : t.priority === "haute" ? "#fed7aa" : t.priority === "moyenne" ? "rgba(13, 173, 219, 0.1)" : t.priority === "faible" ? "#fee2e2" : "#e5e7eb",
+                                color: t.priority === "critique" ? "#991b1b" : t.priority === "haute" ? "#92400e" : t.priority === "moyenne" ? "#0DADDB" : t.priority === "faible" ? "#991b1b" : "#374151"
                               }}>
                                 {t.priority}
                               </span>
@@ -2489,8 +2489,8 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
                               borderRadius: "12px",
                               fontSize: "12px",
                               fontWeight: "500",
-                              background: selectedNotificationTicketDetails.priority === "critique" ? "#f44336" : selectedNotificationTicketDetails.priority === "haute" ? "#fed7aa" : selectedNotificationTicketDetails.priority === "moyenne" ? "#dbeafe" : "#9e9e9e",
-                              color: selectedNotificationTicketDetails.priority === "haute" ? "#92400e" : selectedNotificationTicketDetails.priority === "moyenne" ? "#1e40af" : "white"
+                              background: selectedNotificationTicketDetails.priority === "critique" ? "#f44336" : selectedNotificationTicketDetails.priority === "haute" ? "#fed7aa" : selectedNotificationTicketDetails.priority === "moyenne" ? "rgba(13, 173, 219, 0.1)" : "#9e9e9e",
+                              color: selectedNotificationTicketDetails.priority === "haute" ? "#92400e" : selectedNotificationTicketDetails.priority === "moyenne" ? "#0DADDB" : "white"
                             }}>
                               {selectedNotificationTicketDetails.priority}
                             </span>
@@ -2820,8 +2820,8 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
                   borderRadius: "12px",
                   fontSize: "12px",
                   fontWeight: "500",
-                  background: ticketDetails.priority === "critique" ? "#f44336" : ticketDetails.priority === "haute" ? "#fed7aa" : ticketDetails.priority === "moyenne" ? "#dbeafe" : "#9e9e9e",
-                  color: ticketDetails.priority === "haute" ? "#92400e" : ticketDetails.priority === "moyenne" ? "#1e40af" : "white"
+                  background: ticketDetails.priority === "critique" ? "#f44336" : ticketDetails.priority === "haute" ? "#fed7aa" : ticketDetails.priority === "moyenne" ? "rgba(13, 173, 219, 0.1)" : "#9e9e9e",
+                  color: ticketDetails.priority === "haute" ? "#92400e" : ticketDetails.priority === "moyenne" ? "#0DADDB" : "white"
                 }}>
                   {ticketDetails.priority}
                 </span>
